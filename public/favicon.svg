@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Wheel base -->
+  <circle cx="100" cy="100" r="90" fill="#e0e0e0" stroke="#333" stroke-width="2"/>
+  
+  <!-- Wheel top -->
+  <circle cx="100" cy="100" r="70" fill="#f0f0f0" stroke="#333" stroke-width="2"/>
+
+  <!-- Center dot -->
+  <circle cx="100" cy="100" r="3" fill="#333"/>
+
+  <!-- Spokes -->
+  <line x1="100" y1="30" x2="100" y2="170" stroke="#333" stroke-width="2"/>
+  <line x1="30" y1="100" x2="170" y2="100" stroke="#333" stroke-width="2"/>
+  
+  <!-- Pot on the wheel -->
+  <circle cx="100" cy="100" r="20" fill="#ffcc66" stroke="#996633" stroke-width="2"/>
+
+  <!-- "PWF" characters -->
+  <text x="85" y="120" font-family="Arial, sans-serif" font-size="20" fill="#333">P</text>
+  <text x="95" y="120" font-family="Arial, sans-serif" font-size="20" fill="#333">W</text>
+  <text x="105" y="120" font-family="Arial, sans-serif" font-size="20" fill="#333">F</text>
+</svg>
