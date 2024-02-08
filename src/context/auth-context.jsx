@@ -1,13 +1,15 @@
 import React, { useContext, useEffect, useState } from 'react'
-import { auth, db, signInWithEmailAndPassword, createUserWithEmailAndPassword } from '../firebase/firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { auth, db, signInWithEmailAndPassword, createUserWithEmailAndPassword } from '../utils/firebase';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 const AuthContext = React.createContext({
 	isAuth: false,
 	isLoading: true,
 	user: null,
-	login: () => {},
-	logout: () => {}
+	login: async () => {},
+	register: async () => {},
+	create: async () => {},
+	logout: async () => {}
 });
 
 const AuthProvider = ({ children }) => {  
@@ -24,17 +26,19 @@ const AuthProvider = ({ children }) => {
 
 	const [isAuth, setIsAuth] = useState(hasLocalUser);
 	const [user, setUser] = useState(localUserObject);
+	const [role, setRole] = useState(null);
+	const [ministry, setMinistry] = useState(null);
 	
 	useEffect(() => {
-		auth.onAuthStateChanged(async (user) => {
+		const changed = auth.onAuthStateChanged(async (user) => {
 			if (user) {
 				// get user from firestore
 				const userRef = doc(db, 'users', user.uid);
 				const userData = await getDoc(userRef);
 
 				const userObject = {
-						...user,
-						...userData.data()
+					...user,
+					data: userData.data()
 				};
 
 				setIsAuth(true);
@@ -52,59 +56,82 @@ const AuthProvider = ({ children }) => {
 				localStorage.removeItem('pwf-user');
 			}
 		});
+
+		return changed;
 	}, []);
 
 	const login = async (email, password) => {
 		signInWithEmailAndPassword(auth, email, password)
 			.then(async (userCredential) => {
 				// Signed in
-				const user = userCredential.user;
+				// const user = userCredential.user;
 
-				// get user from firestore
-				const userRef = doc(db, 'users', user.uid);
-				const userData = await getDoc(userRef);
+				// // get user from firestore
+				// const userRef = doc(db, 'users', user.uid);
+				// const userData = await getDoc(userRef);
 
-				const userObject = {
-						...user,
-						...userData.data()
-				};
+				// const userObject = {
+				// 	...user,
+				// 	...userData.data()
+				// };
 
-				setIsAuth(true);
-				setUser(userObject);
+				// setIsAuth(true);
+				// setUser(userObject);
 			})
 			.catch((error) => {
 				const errorCode = error.code;
 				const errorMessage = error.message;
+
+				alert('Unable to login, incorrect credentials.');
 
 				console.log('Auth Error:', errorCode, errorMessage);
 			});
 	};
 
 	const register = async (data) => {
-		createUserWithEmailAndPassword(auth, data.email, data.password)
-			.then(async (userCredential) => {
-				// Signed in
-				const user = userCredential.user;
+		// check data
+		try {
+			if (!data.email || !data.password) {
+				throw new Error('Missing required fields');
+			}
 
-				// add user to firestore
-				const userRef = doc(db, 'users', user.uid);
-				await userRef.set(data);
+			createUserWithEmailAndPassword(auth, data.email, data.password)
+				.catch((error) => {
+					const errorCode = error.code;
+					const errorMessage = error.message;
 
-				const userObject = {
-						...user,
-						...data
-				};
-
-				setIsAuth(true);
-				setUser(userObject);
-			})
-			.catch((error) => {
-				const errorCode = error.code;
-				const errorMessage = error.message;
-
-				console.log('Auth Error:', errorCode, errorMessage);
-			});
+					console.log('Auth Error:', errorCode, errorMessage);
+				});
+		} catch (err) {
+			console.log('Register Error:', err);
+		}
 	};
+
+	const create = async (data) => {
+		// check data
+		try {
+			if (!data.name || !data.phone || !data.username) {
+				throw new Error('Missing required fields');
+			}
+
+			// add user to firestore
+			const userRef = doc(db, 'users', user.uid);
+			await setDoc(userRef, data);
+
+			const userObject = {
+				...user,
+				data
+			};
+
+			setIsAuth(true);
+			setUser(userObject);
+
+			// store user and isauth in local storage
+			localStorage.setItem('pwf-user', JSON.stringify(userObject));
+		} catch (err) {
+			console.log('Register Error:', err);
+		}
+	}
 
 	const logout = () => {
 		auth.signOut().then(() => {
@@ -117,7 +144,7 @@ const AuthProvider = ({ children }) => {
 	}
 
 	return (
-		<AuthContext.Provider value={{ isAuth, user, role, ministry, login, register, logout }}>
+		<AuthContext.Provider value={{ isAuth, user, role, ministry, login, register, create, logout }}>
 			{children}
 		</AuthContext.Provider>
 	);

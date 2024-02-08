@@ -1,6 +1,6 @@
-import { useAuth } from '@/context/auth-context'
 import React from 'react'
 import { Navigate } from 'react-router-dom'
+import { useAuth } from '../../context/auth-context';
 
 const GuestGuard = ({ redirect = true, children }) => {
   const { isAuth } = useAuth();
@@ -8,7 +8,7 @@ const GuestGuard = ({ redirect = true, children }) => {
   // if auth then redirect to dashboard
   if (isAuth) {
     if (redirect) {
-      return <Navigate to="/home" />;
+      return <Navigate to="/dashboard" />;
     }
     return <></>;
   }
